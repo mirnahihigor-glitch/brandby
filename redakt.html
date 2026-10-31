@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор проекта - UI Layout</title>
+    <!-- Подключаем динамический CSS -->
+    <link rel="stylesheet" id="dynamic-clothing-css" href="">
+    
+    <style>
+        :root {
+            --bg-dark: #1c1e2a;
+            --bg-canvas: #5d5f77;
+            --bg-light: #fae0d1;
+            --text-main: #ffffff;
+            --text-dark: #000000;
+            --border-line: #ffffff;
+            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-family); user-select: none; }
+        body { background-color: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 12px; }
+
+        .top-section { background-color: var(--bg-dark); border-bottom: 1px solid var(--border-line); display: flex; flex-direction: column; flex-shrink: 0; }
+        .header-title-row { display: flex; align-items: center; padding: 10px 15px; gap: 10px; border-bottom: 1px solid var(--border-line); }
+        .home-icon { font-size: 18px; cursor: pointer; color: #d1d1d1; transition: color 0.2s; }
+        .home-icon:hover { color: #ffffff; }
+        .header-title-row span { font-size: 13px; color: #d1d1d1; letter-spacing: 0.5px; }
+        .info-grid { display: grid; grid-template-columns: 1.2fr 1.2fr 1.2fr; gap: 20px 40px; padding: 15px 15px 15px 40px; }
+        .info-col { display: flex; flex-direction: column; gap: 15px; }
+        .info-row { display: flex; align-items: flex-end; font-size: 12px; color: #d1d1d1; white-space: nowrap; }
+        .info-line { flex: 1; border-bottom: 1px solid #d1d1d1; margin-left: 8px; height: 14px; }
+
+        .main-workspace { display: flex; flex: 1; overflow: hidden; border-bottom: 2px solid var(--border-line); }
+
+        .left-panel { width: 220px; background-color: var(--bg-dark); border-right: 1px solid var(--border-line); display: flex; flex-direction: column; padding: 15px; position: relative; flex-shrink: 0; }
+        .plus-icon { font-size: 24px; font-weight: 300; color: #ffffff; cursor: pointer; margin-bottom: 25px; width: fit-content; }
+        .color-swatch { display: flex; align-items: center; gap: 10px; font-size: 13px; margin-bottom: 5px; }
+        .swatch-box { width: 16px; height: 16px; background-color: #ffffff; border-radius: 2px; }
+        .swatch-hex { color: #a0a0a0; }
+        .swatch-underline { height: 1px; background-color: #a0a0a0; width: 100%; margin-bottom: 15px; }
+        .left-arrow { position: absolute; right: -8px; top: 50%; transform: translateY(-50%); color: #a0a0a0; font-size: 20px; cursor: pointer; z-index: 10; }
+
+        .canvas-panel { flex: 2; background-color: var(--bg-canvas); border-right: 1px solid var(--border-line); display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; overflow: hidden; }
+        
+        /* Контейнер одежды (стили фона придут из CSS-файла) */
+        .clothing-mockup {
+            position: relative;
+            width: 100%;
+            max-width: 800px; 
+            min-height: 300px; /* Заглушка, чтобы было видно, если CSS не загрузился */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Слой принта */
+        .pattern-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover; 
+            background-position: center;
+            background-repeat: no-repeat;
+            display: none; 
+            z-index: 2; 
+            mix-blend-mode: multiply; 
+        }
+
+        /* Блок ошибки, если файл не найден */
+        #css-error {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #8a1c1c; color: #fff; padding: 20px; border-radius: 8px;
+            text-align: center; z-index: 10; width: 80%; border: 1px solid #ff5555;
+        }
+
+        .middle-panel { width: 220px; background-color: var(--bg-dark); border-right: 1px solid var(--border-line); display: flex; flex-direction: column; padding: 20px; flex-shrink: 0; }
+        .right-inputs { display: flex; flex-direction: column; gap: 20px; }
+        .input-row { display: flex; align-items: flex-end; font-size: 12px; color: #d1d1d1; }
+        .input-line { flex: 1; border-bottom: 1px solid #d1d1d1; margin-left: 8px; height: 14px; }
+        .right-canvas-panel { flex: 1; background-color: var(--bg-canvas); }
+
+        .bottom-section { background-color: var(--bg-light); height: 220px; display: flex; flex-direction: column; position: relative; padding-top: 15px; flex-shrink: 0; }
+        .table-title { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background-color: var(--bg-light); color: var(--text-dark); padding: 0 15px; font-size: 14px; font-weight: 500; z-index: 5; }
+        .table-container { width: 100%; height: 100%; padding: 0 15px 15px 15px; overflow: auto; }
+        table { width: 100%; height: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid var(--bg-light); background-color: var(--bg-dark); color: var(--text-main); padding: 8px 10px; font-size: 12px; text-align: left; vertical-align: middle; }
+        th:first-child, td:first-child { width: 140px; font-weight: normal; color: #d1d1d1; }
+        th { font-weight: bold; height: 40px; }
+        td { height: 35px; }
+
+        .context-menu { position: fixed; background-color: #242535; color: #ffffff; border-radius: 6px; padding: 15px 20px; display: none; flex-direction: column; gap: 12px; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-size: 14px; border: 1px solid #3a3c52; }
+        .context-menu-item { cursor: pointer; transition: color 0.2s; white-space: nowrap; }
+        .context-menu-item:hover { color: var(--bg-light); }
+    </style>
+</head>
+<body>
+
+    <div class="top-section">
+        <div class="header-title-row">
+            <div class="home-icon" id="back-home-btn" title="Вернуться к проектам">🏠</div>
+            <span id="project-title">Загрузка...</span>
+        </div>
+        <div class="info-grid">
+            <div class="info-col">
+                <div class="info-row">название компании - <div class="info-line"></div></div>
+                <div class="info-row">основная ткань - <div class="info-line"></div></div>
+                <div class="info-row">дополнительная ткань - <div class="info-line"></div></div>
+            </div>
+            <div class="info-col">
+                <div class="info-row">коллекция - <div class="info-line"></div></div>
+                <div class="info-row">размеры - <div class="info-line"></div></div>
+                <div class="info-row">общий тираж - <div class="info-line"></div></div>
+            </div>
+            <div class="info-col">
+                <div class="info-row">дата - <div class="info-line"></div></div>
+                <div class="info-row">описание</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-workspace">
+        <aside class="left-panel">
+            <div class="plus-icon">+</div>
+            <div><div class="color-swatch"><span>1</span><div class="swatch-box"></div><span class="swatch-hex">#FFFFFF</span></div><div class="swatch-underline"></div></div>
+            <div class="left-arrow">›</div>
+        </aside>
+
+        <div class="canvas-panel" id="canvas-container">
+            
+            <div class="clothing-mockup">
+                <!-- Одежда будет фоном этого блока (из CSS) -->
+                <div class="pattern-layer" id="pattern-layer"></div>
+            </div>
+
+            <!-- Сообщение об ошибке, если CSS не найден -->
+            <div id="css-error">
+                <b>Не удалось загрузить файл одежды!</b><br><br>
+                Проверьте, что файл <b>od1.css</b> лежит в папке <b>одежда</b>, которая находится рядом с <b>redakt.html</b>.
+            </div>
+
+            <div class="context-menu" id="context-menu">
+                <div class="context-menu-item" id="add-print-btn">добавить принт</div>
+                <div class="context-menu-item" id="remove-print-btn">удалить принт</div>
+            </div>
+            <input type="file" id="print-file-input" accept="image/*" style="display: none;">
+        </div>
+
+        <aside class="middle-panel">
+            <div class="right-inputs">
+                <div class="input-row"><span>рост -</span><div class="input-line"></div></div>
+                <div class="input-row"><span>грудь -</span><div class="input-line"></div></div>
+            </div>
+        </aside>
+        <div class="right-canvas-panel"></div>
+    </div>
+
+    <div class="bottom-section">
+        <div class="table-title">размерная сетка</div>
+        <div class="table-container">
+            <table>
+                <thead><tr><th></th><th>XXS</th><th>XS</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>XXL</th></tr></thead>
+                <tbody>
+                    <tr><td>размер 1</td><td></td><td></td><td></td><td>70-72</td><td>72-74</td><td>74-76</td><td></td></tr>
+                    <tr><td>размер 2</td><td></td><td></td><td></td><td>54-56</td><td>57-59</td><td>60-62</td><td></td></tr>
+                    <tr><td>размер 3</td><td></td><td></td><td></td><td>62-64</td><td>64-66</td><td>64-66</td><td></td></tr>
+                    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const patternLayer = document.getElementById('pattern-layer');
+            const canvasContainer = document.getElementById('canvas-container');
+            const contextMenu = document.getElementById('context-menu');
+            const printFileInput = document.getElementById('print-file-input');
+            const addPrintBtn = document.getElementById('add-print-btn');
+            const removePrintBtn = document.getElementById('remove-print-btn');
+            const dynamicCSS = document.getElementById('dynamic-clothing-css');
+            const cssError = document.getElementById('css-error');
+            const clothingMockup = document.querySelector('.clothing-mockup');
+
+            // 1. Загрузка данных
+            const projectDataString = localStorage.getItem('projectToEdit');
+            
+            // ИСПРАВЛЕНИЕ: Убираем пробел в названии файла (od1.css)
+            let clothingPath = './одежда/od1.css'; 
+
+            if (projectDataString) {
+                try {
+                    const projectData = JSON.parse(projectDataString);
+                    if (projectData.clothing) {
+                        clothingPath = projectData.clothing;
+                        // Автоматически исправляем старые пути с пробелом (od 1.css -> od1.css)
+                        clothingPath = clothingPath.replace(/od\s(\d+)/, 'od$1');
+                    }
+                    if (projectData.name) document.getElementById('project-title').textContent = `Проект: ${projectData.name}`;
+                } catch (e) {
+                    console.error("Ошибка при чтении данных", e);
+                }
+            }
+
+            console.log("Попытка загрузить CSS:", clothingPath);
+
+            // 2. Подключаем CSS и обрабатываем ошибку загрузки
+            dynamicCSS.href = clothingPath;
+            
+            dynamicCSS.onload = () => {
+                // Если CSS загрузился, убираем сообщение об ошибке
+                cssError.style.display = 'none';
+            };
+
+            dynamicCSS.onerror = () => {
+                // Если файл не найден, показываем красное сообщение
+                cssError.style.display = 'block';
+                clothingMockup.style.display = 'none';
+            };
+
+            // 3. Контекстное меню
+            canvasContainer.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); 
+                contextMenu.style.display = 'flex';
+                contextMenu.style.top = `${e.clientY + 5}px`;
+                contextMenu.style.left = `${e.clientX + 5}px`;
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!contextMenu.contains(e.target)) {
+                    contextMenu.style.display = 'none';
+                }
+            });
+
+            // 4. Кнопки меню
+            addPrintBtn.addEventListener('click', () => { printFileInput.click(); contextMenu.style.display = 'none'; });
+            removePrintBtn.addEventListener('click', () => { 
+                patternLayer.style.display = 'none'; 
+                patternLayer.style.backgroundImage = 'none'; 
+                contextMenu.style.display = 'none'; 
+            });
+
+            // 5. Загрузка принта
+            printFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        patternLayer.style.backgroundImage = `url('${event.target.result}')`;
+                        patternLayer.style.display = 'block'; 
+                    };
+                    reader.readAsDataURL(file);
+                }
+                e.target.value = '';
+            });
+
+            // 6. Возврат
+            document.getElementById('back-home-btn').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

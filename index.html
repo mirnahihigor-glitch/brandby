@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Layout - Clothing Selection</title>
+    <style>
+        :root { --bg-main: #1e1e2f; --bg-sidebar: #5d5e73; --color-cream: #fae0d1; --color-orange: #c47b1a; --color-text: #ffffff; --border-dark: #000000; --bg-input-dark: #1e1e2f; --bg-menu-new: #2d2f3f; --accent-new: #f5d74a; --bg-menu-trash: #8a1c1c; --bg-menu-support: #105c1a; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; user-select: none; }
+        body { background-color: var(--bg-main); color: var(--color-text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 12px; }
+        .top-bar { height: 44px; background-color: var(--bg-main); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid var(--border-dark); flex-shrink: 0; }
+        .header-left, .header-center, .header-right { display: flex; align-items: center; gap: 10px; }
+        .header-right { gap: 15px; color: var(--color-cream); font-size: 16px; }
+        .circle-icon { width: 18px; height: 18px; background-color: #ffffff; border-radius: 50%; border: 1px solid var(--border-dark); }
+        .pill-shape { height: 20px; background-color: var(--color-cream); border-radius: 10px; border: 1px solid var(--border-dark); display: flex; align-items: center; justify-content: center; font-size: 11px; color: #000; padding: 0 12px; }
+        .pill-long { width: 160px; justify-content: flex-start; }
+        .pill-medium { width: 80px; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .sidebar { width: 160px; background-color: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid var(--border-dark); padding-top: 10px; overflow-y: auto; }
+        .settings-icon { font-size: 20px; margin-left: 10px; margin-bottom: 15px; color: var(--color-cream); }
+        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; font-size: 11px; font-weight: 500; margin-bottom: 2px; border-right: 4px solid transparent; }
+        .menu-item-new { background-color: var(--bg-menu-new); border-right-color: var(--accent-new); color: var(--color-cream); }
+        .menu-item-trash { background-color: var(--bg-menu-trash); border-right-color: #fff; }
+        .menu-item-support { background-color: var(--bg-menu-support); border-right-color: #fff; }
+        .collections-header { text-align: center; font-size: 9px; color: var(--color-cream); text-transform: uppercase; margin: 15px 0 10px 0; padding: 5px 0; border-top: 1px solid #8a8b9e; border-bottom: 1px solid #8a8b9e; }
+        .collection-item { background-color: #e0e0e0; color: #000; padding: 4px 8px; font-size: 11px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; margin: 0 5px; border-radius: 2px; }
+        .content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .content-toolbar { display: flex; align-items: center; gap: 12px; padding: 15px 25px 10px 25px; width: 100%; }
+        .toolbar-plus { color: #ffffff; font-size: 26px; font-weight: 300; line-height: 1; cursor: pointer; margin-right: 5px; transition: transform 0.1s; }
+        .toolbar-plus:hover { color: var(--color-cream); transform: scale(1.1); }
+        .toolbar-pill { background-color: var(--color-cream); color: #000; border-radius: 12px; padding: 3px 14px; font-size: 11px; font-weight: 600; }
+        .slider-wrapper { flex: 1; display: flex; align-items: center; margin-left: 5px; }
+        .slider-thick { flex: 1; height: 16px; background-color: var(--color-cream); border-radius: 8px; }
+        .slider-gear { color: var(--color-cream); font-size: 18px; margin: 0 6px; }
+        .slider-thin { flex: 0 0 12%; height: 2px; background-color: var(--color-cream); margin-right: 15px; }
+        .search-icon svg { width: 20px; height: 20px; stroke: #ffffff; stroke-width: 2.5; fill: none; stroke-linecap: round; }
+        .section-title { font-size: 18px; font-weight: bold; color: var(--color-cream); margin: 0 25px 20px 25px; }
+        .projects-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; width: 100%; padding: 0 25px; }
+        .project-card { display: flex; flex-direction: column; gap: 8px; cursor: pointer; width: 100%; animation: fadeInScale 0.3s ease-out forwards; transition: transform 0.2s; }
+        .project-card:hover { transform: translateY(-3px); }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .card-body { background-color: var(--color-cream); width: 100%; aspect-ratio: 1.6 / 1; border-radius: 4px; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+        .card-label { background-color: #222436; color: var(--color-cream); font-size: 12px; padding: 6px 35px; border-radius: 14px; height: 24px; display: inline-flex; align-items: center; justify-content: center; position: absolute; top: 15px; z-index: 2; }
+        .card-logo-preview { max-width: 60%; max-height: 60%; object-fit: contain; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; display: none; }
+        .card-footer { background-color: var(--color-cream); width: 100%; height: 18px; border-radius: 2px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: var(--color-cream); width: 800px; padding: 30px; border-radius: 8px; color: #000; display: flex; flex-direction: column; gap: 20px; position: relative; animation: modalSlide 0.3s ease-out; }
+        @keyframes modalSlide { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; font-weight: bold; color: #000; cursor: pointer; line-height: 1; transition: transform 0.2s, color 0.2s; z-index: 10; }
+        .modal-close-btn:hover { transform: scale(1.2); color: var(--color-orange); }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 12px; font-weight: bold; color: #000; }
+        .dark-input { background-color: var(--bg-input-dark); border: 1px solid #000; color: var(--color-cream); padding: 10px 15px; border-radius: 4px; font-size: 14px; outline: none; width: 100%; }
+        .modal-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .modal-column { display: flex; flex-direction: column; gap: 8px; }
+        .dark-box { background-color: var(--bg-input-dark); border-radius: 6px; position: relative; overflow: hidden; }
+        .clothing-box { height: 250px; border-radius: 6px; position: relative; background-color: var(--bg-input-dark); display: flex; flex-direction: column; }
+        .clothing-main-view { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; padding: 40px 20px 20px 20px; position: relative; }
+        .clothing-main-view img { max-width: 80%; max-height: 80%; object-fit: contain; }
+        .box-header { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; color: var(--color-cream); font-size: 18px; z-index: 5; }
+        .menu-icon { display: flex; flex-direction: column; gap: 4px; cursor: pointer; padding: 5px; }
+        .menu-icon span { display: block; width: 22px; height: 2px; background-color: var(--color-cream); transition: opacity 0.2s; }
+        .menu-icon:hover span { opacity: 0.7; }
+        .clothing-gallery-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-input-dark); display: none; flex-direction: column; z-index: 10; }
+        .clothing-gallery-view.active { display: flex; }
+        .gallery-header { padding: 10px 15px; display: flex; align-items: center; border-bottom: 1px solid #333; }
+        .back-btn { color: var(--color-cream); font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; transition: transform 0.2s; }
+        .back-btn:hover { transform: scale(1.1); }
+        .gallery-grid { flex: 1; overflow-y: auto; padding: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; align-content: start; }
+        .gallery-item { background-color: #2a2c3e; border-radius: 4px; padding: 10px; cursor: pointer; display: flex; justify-content: center; align-items: center; aspect-ratio: 1 / 1; border: 1px solid transparent; transition: border-color 0.2s, background-color 0.2s; }
+        .gallery-item:hover { border-color: var(--color-cream); background-color: #33364a; }
+        .gallery-item img { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; }
+        .logo-box { height: 150px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: background-color 0.2s; border: 1px dashed #5d5e73; }
+        .logo-box:hover { background-color: #2a2c3e; }
+        .logo-plus { font-size: 24px; color: var(--color-cream); font-weight: bold; }
+        #logo-preview { max-width: 60%; max-height: 60%; object-fit: contain; display: none; }
+        .btn-create { background-color: var(--color-orange); color: #fff; border: none; border-radius: 4px; padding: 12px 20px; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-top: auto; transition: background-color 0.2s; }
+        .btn-create:hover { background-color: #a56513; }
+        .btn-create span { font-size: 18px; }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="header-left"><div class="circle-icon"></div><div class="pill-shape pill-long"></div></div>
+        <div class="header-center"><div class="pill-shape pill-medium">проекты</div><div class="pill-shape pill-medium">выставка</div></div>
+        <div class="header-right"><span>⚑</span><span>★</span><div class="circle-icon"></div></div>
+    </header>
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="settings-icon">⚙</div>
+            <div class="menu-item menu-item-new"><span>Новые проекты</span><span>+</span></div>
+            <div class="menu-item menu-item-trash"><span>Корзина</span><span>🗑</span></div>
+            <div class="menu-item menu-item-support"><span>Поддержка</span><span>?</span></div>
+            <div class="collections-header">КОЛЛЕКЦИИ</div>
+            <div class="collection-item"><div><span class="folder-icon">📁</span> перчи</div><span>+</span></div>
+        </aside>
+        <main class="content">
+            <div class="content-toolbar">
+                <div class="toolbar-plus" id="open-modal-btn">+</div>
+                <div class="toolbar-pill">проекты</div>
+                <div class="slider-wrapper"><div class="slider-thick"></div><div class="slider-gear">⚙</div><div class="slider-thin"></div></div>
+                <div class="search-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+            </div>
+            <h2 class="section-title">новые проекты</h2>
+            <div class="projects-grid" id="projects-container"></div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="project-modal">
+        <div class="modal-content">
+            <div class="modal-close-btn" id="close-modal-btn" title="Закрыть">✕</div>
+            <div class="form-group"><label>название проекта</label><input type="text" id="input-project-name" class="dark-input" placeholder="Введите название..." autocomplete="off"></div>
+            <div class="modal-grid">
+                <div class="modal-column">
+                    <label>одежда</label>
+                    <div class="dark-box clothing-box">
+                        <div class="clothing-main-view" id="clothing-main-view">
+                            <div class="box-header"><span>⚙</span><div class="menu-icon" id="open-clothing-gallery"><span></span><span></span><span></span></div></div>
+                            <!-- По умолчанию ставим картинку (png) -->
+                            <img id="selected-clothing-img" src="./одежда/od 1.png" alt="Одежда">
+                        </div>
+                        <div class="clothing-gallery-view" id="clothing-gallery-view">
+                            <div class="gallery-header"><div class="back-btn" id="close-clothing-gallery">‹</div></div>
+                            <div class="gallery-grid" id="clothing-gallery-grid"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-column" style="justify-content: space-between;">
+                    <div>
+                        <label>логотип</label>
+                        <div class="dark-box logo-box" id="logo-upload-area"><span class="logo-plus" id="logo-plus-icon">+</span><img id="logo-preview" alt="Превью логотипа"></div>
+                        <input type="file" id="logo-file-input" accept="image/*" style="display: none;">
+                    </div>
+                    <button class="btn-create" id="btn-confirm-create">создать <span>›</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <template id="card-template">
+        <div class="project-card">
+            <div class="card-body">
+                <div class="card-label">название</div>
+                <img class="card-logo-preview" src="" alt="logo">
+            </div>
+            <div class="card-footer"></div>
+        </div>
+    </template>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const openModalBtn = document.getElementById('open-modal-btn');
+            const modal = document.getElementById('project-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const inputName = document.getElementById('input-project-name');
+            const logoUploadArea = document.getElementById('logo-upload-area');
+            const logoFileInput = document.getElementById('logo-file-input');
+            const logoPreview = document.getElementById('logo-preview');
+            const logoPlusIcon = document.getElementById('logo-plus-icon');
+            const openGalleryBtn = document.getElementById('open-clothing-gallery');
+            const closeGalleryBtn = document.getElementById('close-clothing-gallery');
+            const galleryView = document.getElementById('clothing-gallery-view');
+            const galleryGrid = document.getElementById('clothing-gallery-grid');
+            const selectedClothingImg = document.getElementById('selected-clothing-img');
+            const btnConfirmCreate = document.getElementById('btn-confirm-create');
+            const projectsContainer = document.getElementById('projects-container');
+            const cardTemplate = document.getElementById('card-template');
+
+            let currentLogoDataUrl = null;
+            // По умолчанию: картинка для превью и CSS для редактора
+            let currentClothingPng = './одежда/od 1.png'; 
+            let currentClothingCss = './одежда/od 1.css'; 
+            
+            // Массив имен без расширений для удобства
+            const clothingTemplates = ['od 1', 'od 2', 'od 3', 'od 4'];
+
+            clothingTemplates.forEach(baseName => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                const img = document.createElement('img');
+                
+                // Берем PNG для превью
+                img.src = `./одежда/${baseName}.png`;
+                // Если PNG нет, показываем заглушку
+                img.onerror = function() {
+                    this.src = `https://via.placeholder.com/150/2a2c3e/fae0d1?text=${encodeURIComponent(baseName)}`;
+                };
+                
+                item.appendChild(img);
+                
+                item.addEventListener('click', () => {
+                    // Запоминаем оба пути
+                    currentClothingPng = `./одежда/${baseName}.png`;
+                    currentClothingCss = `./одежда/${baseName}.css`;
+                    
+                    // Меняем превью
+                    selectedClothingImg.src = currentClothingPng;
+                    toggleGallery(false);
+                });
+                galleryGrid.appendChild(item);
+            });
+
+            function toggleGallery(show) { if (show) galleryView.classList.add('active'); else galleryView.classList.remove('active'); }
+            openGalleryBtn.addEventListener('click', () => toggleGallery(true));
+            closeGalleryBtn.addEventListener('click', () => toggleGallery(false));
+            logoUploadArea.addEventListener('click', () => logoFileInput.click());
+            
+            logoFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        currentLogoDataUrl = event.target.result;
+                        logoPreview.src = currentLogoDataUrl;
+                        logoPreview.style.display = 'block';
+                        logoPlusIcon.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            openModalBtn.addEventListener('click', () => { modal.classList.add('active'); inputName.focus(); toggleGallery(false); });
+            closeModalBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+            btnConfirmCreate.addEventListener('click', () => {
+                const projectName = inputName.value.trim() || 'Без названия';
+                const newCardFragment = cardTemplate.content.cloneNode(true);
+                const cardElement = newCardFragment.querySelector('.project-card');
+                
+                cardElement.dataset.name = projectName;
+                cardElement.dataset.clothingCss = currentClothingCss; // Передаем CSS путь
+                
+                if (currentLogoDataUrl) cardElement.dataset.logo = currentLogoDataUrl;
+                const label = newCardFragment.querySelector('.card-label');
+                label.textContent = projectName;
+                if (currentLogoDataUrl) {
+                    const cardLogo = newCardFragment.querySelector('.card-logo-preview');
+                    cardLogo.src = currentLogoDataUrl;
+                    cardLogo.style.display = 'block';
+                }
+                
+                cardElement.addEventListener('click', () => {
+                    const projectData = { 
+                        name: cardElement.dataset.name, 
+                        clothing: cardElement.dataset.clothingCss, // Сохраняем CSS
+                        logo: cardElement.dataset.logo || '' 
+                    };
+                    localStorage.setItem('projectToEdit', JSON.stringify(projectData));
+                    window.location.href = 'redakt.html';
+                });
+                
+                projectsContainer.appendChild(newCardFragment);
+                closeModal();
+            });
+
+            function closeModal() {
+                modal.classList.remove('active');
+                inputName.value = '';
+                currentLogoDataUrl = null;
+                logoPreview.src = ''; logoPreview.style.display = 'none'; logoPlusIcon.style.display = 'block'; logoFileInput.value = '';
+                currentClothingPng = './одежда/od 1.png';
+                currentClothingCss = './одежда/od 1.css';
+                selectedClothingImg.src = currentClothingPng; 
+                toggleGallery(false);
+            }
+        });
+    </script>
+</body>
+</html>
